@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+	{% load static %}
+<link rel="icon" href="{% static '/logo.svg' %}" type="image/png" sizes="400x400">
+<title>Jenkin(-)Board</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" >
+      google.charts.load("current", {packages:["corechart"]});
+      google.charts.setOnLoadCallback(drawChart);
+      google.charts.setOnLoadCallback(drawBarChart);
+
+      function consoleOutput(branch,build_no){
+      document.getElementById('loading').textContent ='Console Output Loading...';
+      document.getElementById('data').style.display='none';
+      const endpoint='/console/?data='+branch+':::'+build_no;
+      $.ajax({
+      method: "GET",
+      url: endpoint,
+      success: function(data_1) {
+        document.getElementById('loading').textContent ='';
+        document.getElementById('console').style.display='block';
+        document.getElementById('console_text').innerHTML = data_1['data']['console_output'].join('<br />');
+        document.getElementById('heading').textContent='Console-Output of Build Number: '+ data_1.data.build_no;
+      },
+      error: function(error_data) {
+        console.log(error_data);
+      }
+    })
+      }
+
+      function drawBarChart() {
+      var data=JSON.parse("{{data|escapejs}}");
+      data = google.visualization.arrayToDataTable(data['bar']);
+
+      var view = new google.visualization.DataView(data);
+      view.setColumns([0, 1,
+                       { calc: "stringify",
+                         sourceColumn: 1,
+                         type: "string",
+                         role: "annotation" },
+                       2]);
+
+      var options = {
+        title: "Build Runner Graph",
+        width: 600,
+        height: 400,
+        bar: {groupWidth: "95%"},
+        legend: { position: "none" },
+      };
+        var chart = new google.visualization.BarChart(document.getElementById("barchart_values"));
+        chart.draw(view, options);
+
+        document.getElementById('loading').textContent ='';
+      }
+
+
+      function drawChart() {
+      document.getElementById('loading').textContent ='Charts Loading....';
+      document.getElementById('console').style.display='none';
+      var data=JSON.parse("{{data|escapejs}}");
+      const bg_colours=data['bg_colours']
+      data = google.visualization.arrayToDataTable(data['pie']);
+      var options = {
+          title: 'Build Status Chart',
+          width: 600,
+          height: 400,
+          is3D: true,
+          colors:bg_colours
+        };
+
+      var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
+      chart.draw(data, options);
+      }
+
+    </script>
+  </head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+.headertable{
+position:sticky;
+top:0%;
+}
+.main{
+padding:10px;
+}
+.sticky{
+   position: fixed;
+   font-size:25px;
+   right:0%;
+   top:10%;
+   height:35px;
+   width:50px;
+   color:Black;
+   background-colour:white;
+   border:1px solid black;
+   margin-right:10px;
+  }
+</style>
+
+<body class="container-fluid">
+<center class="row">
+	<h1><img src="{% static '/logo.png' %}" alt="JD" width="95" height="70"/><b>Jenkins</b> Dashboard</h1>
+</center>
+<hr />
+<div class="d-flex flex-column p-2">
+	<center>
+		<h4 id="loading"></h4>
+	</center>
+	<div id="data main">
+	<div class="row">
+		<div id="piechart_3d" class="col-sm-6" style="margin-right:0px;">
+		</div>
+
+		<div id="barchart_values" class="col-sm-6" style="margin-right:0px;">
+		</div>
+
+	</div>
+	<div class="" style="display:flex;flex-direction:row;justify-content:space-between;">
+		{% for each in builds %}
+			<h1 class="col-sm-auto col-lg-auto"><span style="color:{{each.colour}};font-family:bold;font-size:30px;">{{each.des}} :</span> {{each.count}}</h1>
+		{% endfor %}
+	</div>
+		<table>
+		  <tr class="headertable">
+			<th>SNo</th>
+			<th>BuildNo</th>
+			<th>BranchName</th>
+			<th>Result</th>
+			<th>CommitDescription</th>
+			<th>DateAndTimeOfBuild</th>
+			<th>Duration</th>
+			<th>Console</th>
+		  </tr>
+			{% for each_build in builds_table %}
+			<tr>
+				<td>{{each_build.s_no}}</td>
+				<td>{{each_build.build_no}}</td>
+				<td>{{each_build.branch}}</td>
+				{% if each_build.result == "FAILURE" %}
+					<td style="color:red">{{each_build.result}}</td>
+				{% elif each_build.result == "SUCCESS" %}
+					<td style="color:green">{{each_build.result}}</td>
+				{% elif each_build.result == "UNSTABLE" %}
+					<td style="color:orange">{{each_build.result}}</td>
+				{% else %}
+					<td style="color:blue">{{each_build.result}}</td>
+				{% endif %}
+				<td>{{each_build.description}}</td>
+				<td>{{each_build.date}}</td>
+				<td>{{each_build.duration}}</td>
+				<td>
+					<button onclick="consoleOutput('{{each_build.path}}',{{each_build.build_no}})" class="btn btn-big">Console</button>
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+		</div>
+	<div id="console" >
+	  <div class="">
+		  <div style="display:flex;flex-direction:row;justify-content:space-between;">
+			  <h3 id="heading" ></h3>
+			  <button class="sticky" onclick="document.getElementById('console').style.display='none';document.getElementById('data').style.display='block'" >X</button>
+		  </div>
+		  <div class="">
+			  <p id="console_text"></p>
+		  </div>
+	  </div>
+</div>
+</div>
+</body>
+</html>
