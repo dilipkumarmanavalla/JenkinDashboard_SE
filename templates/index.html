@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
 	{% load static %}
-<link rel="icon" href="{% static '/logo.svg' %}" type="image/png" sizes="400x400">
+<link rel="icon" href="{% static '/logo.svg' %}" type="image/png" sizes="400*400" class="svg-cls">
 <title>Jenkin(-)Board</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -83,6 +83,7 @@ table {
   font-family: arial, sans-serif;
   border-collapse: collapse;
   width: 100%;
+  background-color:white
 }
 
 td, th {
@@ -120,7 +121,7 @@ padding:10px;
 	<center>
 		<h4 id="loading"></h4>
 	</center>
-	<div id="data main">
+	<div id="data" class="main">
 	<div class="row">
 		<div id="piechart_3d" class="col-sm-6" style="margin-right:0px;">
 		</div>

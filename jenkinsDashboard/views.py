@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from rest_framework import status
 from django.views.generic import View
 from rest_framework.decorators import api_view, renderer_classes
 from django.http import HttpResponse
@@ -8,10 +7,11 @@ import datetime
 import math
 import random
 import json
+
 server = jenkins.Jenkins(
-    "hot-url",
-    username="username",
-    password="passwd",
+    "https://testmap-deploy.adfdata.net",
+    username="manavalladilipkumar",
+    password="Dilip@2129",
 )
 
 
@@ -22,7 +22,7 @@ def get_console_output(req):
     data={'console_output':data,'build_no':req_data[1]}
     return HttpResponse(json.dumps({'data': data,'success':True}), content_type="application/json")
 
-def build_ids(purpose):
+def get_builds_information(purpose):
     lst = []
     branch="assetmanagement/UT_90_New_TestCases"
     info = server.get_job_info(branch)
@@ -67,15 +67,11 @@ def build_ids(purpose):
             )
             lst.append(build_info)
         return lst,branch
-    if purpose == "ids":
-        lst = map(lambda x: "Build No. " + str(x), sorted(list(set(lst)), reverse=True))
-        return lst, s
     return lst, s
 
 
 def builds_table(request):
-    print('Started....')
-    data, branch = build_ids("builds_table")
+    data, branch = get_builds_information("builds_table")
     for i in range(0, len(data)):
         tim=round((data[i]["duration"]/60)/60,1)
         timestamp=int(str(data[i]['timestamp'])[:10])
@@ -99,21 +95,20 @@ def builds_table(request):
 class HomeView(View):
     def get(self, request, *args, **kwargs):
         build_table_data=builds_table('req')
-        chartLabel = "success-failure rate "
-        labels, chartdata, build_runner = build_ids("graph")
-        lable = ['Success', 'Failure', 'Unstable', 'Abort']
-        pie_data = list(map(lambda x: [lable[chartdata.index(x)], x], chartdata))
-        lable = ['green', 'red', 'orange', 'blue']
+        chart_label = "success-failure rate "
+        labels, chart_data, build_runner = get_builds_information("graph")
+        temp = ['Success', 'Failure', 'Unstable', 'Abort']
+        pie_data = list(map(lambda x: [temp[chart_data.index(x)], x], chart_data))
+        temp = ['green', 'red', 'orange', 'blue']
         pie_data.insert(0, ['Task', 'Build Status Chart'])
-        builds=list(map(lambda x:{'des':x[0],'count': x[1],'colour': lable[pie_data.index(x)-1]},pie_data[1:]))
+        builds=list(map(lambda x:{'des':x[0],'count': x[1],'colour': temp[pie_data.index(x)-1]},pie_data[1:]))
         builds.insert(0,{'des':'Jobs','count': sum(i[1] for i in pie_data[1:]),'colour':'grey'})
         data = {
             "labels": labels,
-            "chartLabel": chartLabel,
-            "chartdata": chartdata,
+            "chartLabel": chart_label,
+            "chartdata": chart_data,
             "pie": pie_data,
             "bar": build_runner,
-            "bg_colours": lable,
+            "bg_colours": temp,
         }
-        print('Completed')
         return render(request, "index.html", {"builds_table": build_table_data,"data":json.dumps(data),"builds":builds})
