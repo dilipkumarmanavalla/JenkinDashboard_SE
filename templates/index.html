@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" id="htmlone">
 <head>
 	{% load static %}
 <link rel="icon" href="{% static '/logo.svg' %}" type="image/png" sizes="400*400" class="svg-cls">
@@ -11,6 +11,7 @@
 <script type="text/javascript" >
       google.charts.load("current", {packages:["corechart"]});
       google.charts.setOnLoadCallback(drawChart);
+      google.charts.setOnLoadCallback(drawTimChart);
       google.charts.setOnLoadCallback(drawBarChart);
 
       function consoleOutput(branch,build_no){
@@ -30,6 +31,22 @@
         console.log(error_data);
       }
     })
+      }
+
+	  function drawTimChart(data) {
+	    var data=JSON.parse("{{data|escapejs}}");
+        var data = google.visualization.arrayToDataTable(data['tim_plot']);
+
+        var options = {
+          title: 'Build Time Duration Graph',
+          curveType: 'function',
+          legend: { position: 'top' },
+          height: 400,
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('build_duration_chart'));
+
+        chart.draw(data, options);
       }
 
       function drawBarChart() {
@@ -98,6 +115,16 @@ top:0%;
 .main{
 padding:10px;
 }
+.classic {
+  height:40px;
+  width:400px;
+}
+.classic-button{
+  height:40px;
+}
+.tim_graph{
+width:100vw;
+}
 .sticky{
    position: fixed;
    font-size:25px;
@@ -112,9 +139,19 @@ padding:10px;
   }
 </style>
 
-<body class="container-fluid">
+<body class="container-fluid" id="body">
 <center class="row">
 	<h1><img src="{% static '/logo.png' %}" alt="JD" width="95" height="70"/><b>Jenkins</b> Dashboard</h1>
+	<form action="/" method="get" >
+		{{ form.value }}
+	<select id="select_job" class="classic" name="branch">
+		<option value='' selected hidden>Select Job</option>
+		{% for each_job in select_branch %}
+		<option value={{each_job.val}}>{{each_job.des}}</option>
+		{% endfor %}
+	</select>
+		<input type="submit" value="Submit" class="classic-button">
+	</form>
 </center>
 <hr />
 <div class="d-flex flex-column p-2">
@@ -128,8 +165,11 @@ padding:10px;
 
 		<div id="barchart_values" class="col-sm-6" style="margin-right:0px;">
 		</div>
-
 	</div>
+	<center class="tim_graph" id="build_duration_chart"  style="margin-right:0px;">
+
+		</center>
+
 	<div class="" style="display:flex;flex-direction:row;justify-content:space-between;">
 		{% for each in builds %}
 			<h1 class="col-sm-auto col-lg-auto"><span style="color:{{each.colour}};font-family:bold;font-size:30px;">{{each.des}} :</span> {{each.count}}</h1>
