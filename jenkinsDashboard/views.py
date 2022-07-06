@@ -9,9 +9,9 @@ import random
 import json
 
 server = jenkins.Jenkins(
-    "https://testmap-deploy.adfdata.net",
-    username="manavalladilipkumar",
-    password="Dilip@2129",
+    "host",
+    username="usrnm",
+    password="pswd",
 )
 
 
@@ -37,8 +37,7 @@ def get_selected_branch():
                 for j in data["jobs"]:
                     val = i["name"] + "/" + j["name"]
                     select_branch.append({"val": val, "des": j["name"].replace('%2','_')})
-            else:
-                select_branch.append({"des": i["name"], "val": i["name"]})
+
     return select_branch
 
 
@@ -157,30 +156,21 @@ def generate_dashboard_data(request):
 
 class HomeView(View):
     def get(self, request):
-        try:
-            data, build_table_data, select_branch, builds = generate_dashboard_data(
-                request
-            )
-            return render(
-                request,
-                "index.html",
-                {
-                    "builds_table": build_table_data,
-                    "data": json.dumps(data),
-                    "select_branch": select_branch,
-                    "builds": builds,
-                },
-            )
-        except Exception as e:
-            select_branch = get_selected_branch()
-            return render(
-                request,
-                "index.html",
-                {
-                    "builds_table": [],
-                    "data": {},
-                    "select_branch": select_branch,
-                    "builds": [],
-                    "success": True,
-                },
-            )
+        # try:
+        data, build_table_data, select_branch, builds = generate_dashboard_data(
+            request
+        )
+        return render(
+            request,
+            "index.html",
+            {
+                "builds_table": build_table_data,
+                "data": json.dumps(data),
+                "select_branch": select_branch,
+                "builds": builds,
+            },
+        )
+
+class LayoutView(View):
+    def get(self,request):
+        return render(request,"Anypage.html")

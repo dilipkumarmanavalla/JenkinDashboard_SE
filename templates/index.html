@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+{% extends 'Layout.html' %}
+{% block content %}
 <html lang="en" dir="ltr" id="htmlone">
 <head>
 	{% load static %}
@@ -39,6 +41,8 @@
 
         var options = {
           title: 'Build Time Duration Graph',
+          vAxis: {title: 'Time in Min'},
+          hAxis: {title: 'Build Number'},
           curveType: 'function',
           legend: { position: 'top' },
           height: 400,
@@ -104,7 +108,7 @@ table {
 }
 
 td, th {
-  border: 1px solid #dddddd;
+  border: 1px solid lightblue;
   text-align: left;
   padding: 8px;
 }
@@ -112,19 +116,25 @@ td, th {
 position:sticky;
 top:0%;
 }
-.main{
+.mainn{
 padding:10px;
 }
 .classic {
-  height:40px;
+  height:35px;
   width:400px;
+  border:2px solid lightblue;
 }
 .classic-button{
-  height:40px;
+  height:35px;
+  border:2px solid lightblue;
+  color:lightblue;
+  background-color:white;
 }
 .tim_graph{
-width:100vw;
+width:100%;
 }
+.hr-line{
+border: 1px solid lightblue;}
 .sticky{
    position: fixed;
    font-size:25px;
@@ -137,9 +147,17 @@ width:100vw;
    border:1px solid black;
    margin-right:10px;
   }
+  .cont{
+  width:100%;
+  overflow-x:hidden;
+  }
+  *{
+  scrollbar-width: thin;          /* "auto" or "thin" */
+  scrollbar-color: grey white;   /* scroll thumb and track */
+  }
 </style>
 
-<body class="container-fluid" id="body">
+<div class="cont" id="body">
 <center class="row">
 	<h1><img src="{% static '/logo.png' %}" alt="JD" width="95" height="70"/><b>Jenkins</b> Dashboard</h1>
 	<form action="/" method="get" >
@@ -153,12 +171,12 @@ width:100vw;
 		<input type="submit" value="Submit" class="classic-button">
 	</form>
 </center>
-<hr />
+<hr class="hr-line"/>
 <div class="d-flex flex-column p-2">
 	<center>
 		<h4 id="loading"></h4>
 	</center>
-	<div id="data" class="main">
+	<div id="data" class="mainn">
 	<div class="row">
 		<div id="piechart_3d" class="col-sm-6" style="margin-right:0px;">
 		</div>
@@ -179,7 +197,6 @@ width:100vw;
 		  <tr class="headertable">
 			<th>SNo</th>
 			<th>BuildNo</th>
-			<th>BranchName</th>
 			<th>Result</th>
 			<th>CommitDescription</th>
 			<th>DateAndTimeOfBuild</th>
@@ -187,10 +204,9 @@ width:100vw;
 			<th>Console</th>
 		  </tr>
 			{% for each_build in builds_table %}
-			<tr>
+			<tr class="each-row">
 				<td>{{each_build.s_no}}</td>
 				<td>{{each_build.build_no}}</td>
-				<td>{{each_build.branch}}</td>
 				{% if each_build.result == "FAILURE" %}
 					<td style="color:red">{{each_build.result}}</td>
 				{% elif each_build.result == "SUCCESS" %}
@@ -222,5 +238,6 @@ width:100vw;
 	  </div>
 </div>
 </div>
-</body>
+</div>
 </html>
+{% endblock content %}
