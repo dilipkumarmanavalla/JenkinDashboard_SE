@@ -8,3 +8,8 @@ any proir knowledge on jenkins.
 
 Using Python as code base, Django as Framework and Jenkins realted python Lib for creating this Dashboard.
 I used HTML, CSS and Javascript for front end creation. This solution made operating the jenkins jobs without any proir knowledge on jenkins.
+
+Steps:
+Import all requirements.txt libraries
+Setup Django
+Run the manage.py file for starting the run and make the service available.
